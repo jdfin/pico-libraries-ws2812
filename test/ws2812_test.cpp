@@ -8,19 +8,24 @@
 //
 #include "ws2812.h"
 
+// PIO will use this gpio to drive LEDs
 static constexpr int ws2812_gpio = 12;
 
+// how many LEDs on the string attached to ws2812_gpio
 static constexpr int str_len = 4;
 
 static Ws2812 ws2812(ws2812_gpio, str_len);
 
-// each call to set() should be very quick as long as
-// number of leds <= fifo depth (8 for 2040 and 2350)
+// Each call to set() should be very quick as long as the
+// number of LEDs <= FIFO depth (8 for 2040 and 2350).
+// Keep track of min/max/avg call time to verify.
 static int32_t set_min_us = INT32_MAX;
 static int32_t set_max_us = INT32_MAX;
-static int32_t set_sum_us = 0; // for avg
-static int32_t set_cnt = 0;    // for avg
+static int32_t set_sum_us = 0;
+static int32_t set_cnt = 0;
 
+
+// Set the LEDs, timing how long the set() call takes.
 static void set(int r, int g, int b)
 {
     int32_t t0_us = int32_t(time_us_32());
@@ -35,12 +40,23 @@ static void set(int r, int g, int b)
     set_cnt++;
 }
 
+// clang-format off
+static void off()           { set(0,   0,   0);   }
+static void red(int brt)    { set(brt, 0,   0);   }
+static void green(int brt)  { set(0,   brt, 0);   }
+static void blue(int brt)   { set(0,   0,   brt); }
+static void yellow(int brt) { set(brt, brt, 0);   }
+static void purple(int brt) { set(brt, 0,   brt); }
+static void cyan(int brt)   { set(0,   brt, brt); }
+static void white(int brt)  { set(brt, brt, brt); }
+// clang-format on
+
 
 int main()
 {
     stdio_init_all();
 
-#if 1
+#if 0
     while (!stdio_usb_connected())
         tight_loop_contents();
 #endif
@@ -53,18 +69,24 @@ int main()
 
     ws2812.init();
 
-    constexpr uint8_t brightness = 0xff;
+    constexpr uint8_t brt = 0xff;
     constexpr int sleep_time_ms = 3000;
     while (true) {
-        set(0x00, 0x00, 0x00);
+        off();
         sleep_ms(sleep_time_ms);
-        set(brightness, 0x00, 0x00);
+        red(brt);
         sleep_ms(sleep_time_ms);
-        set(0x00, brightness, 0x00);
+        green(brt);
         sleep_ms(sleep_time_ms);
-        set(0x00, 0x00, brightness);
+        blue(brt);
         sleep_ms(sleep_time_ms);
-        set(brightness, brightness, brightness);
+        yellow(brt);
+        sleep_ms(sleep_time_ms);
+        purple(brt);
+        sleep_ms(sleep_time_ms);
+        cyan(brt);
+        sleep_ms(sleep_time_ms);
+        white(brt);
         printf("min=%ldus max=%ldus avg=%ldus\n", set_min_us, set_max_us,
                (set_sum_us + set_cnt / 2) / set_cnt);
         sleep_ms(sleep_time_ms);
