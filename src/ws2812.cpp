@@ -3,7 +3,7 @@
 //
 #include "hardware/pio.h"
 //
-#include "ws2812.h"
+#include "ws2812/ws2812.h"
 #include "ws2812.pio.h"
 
 

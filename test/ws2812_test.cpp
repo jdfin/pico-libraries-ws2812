@@ -6,7 +6,7 @@
 #include "pico/stdlib.h"
 #include "pico/time.h" // sleep_ms
 //
-#include "ws2812.h"
+#include "ws2812/ws2812.h"
 
 // PIO will use this gpio to drive LEDs
 static constexpr int ws2812_gpio = 12;
